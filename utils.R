@@ -2,7 +2,7 @@ library(dplyr)
 library(purrr)       
 library(Hmisc)       
 library(vcd)        
-
+library(rcompanion)
 
 is_categorical <- function(x){
   is.character(x) || is.factor(x)
@@ -10,7 +10,9 @@ is_categorical <- function(x){
 
 calc_pearson_corr <- function(data, target_var) {
   numeric_vars <- data %>% select(where(is.numeric), -all_of(target_var))
-  cor(numeric_vars, use = 'pairwise.complete.obs')
+  pearson_matrix <- cor(numeric_vars, use = 'pairwise.complete.obs')
+  pearson_matrix[lower.tri(pearson_matrix, diag = TRUE)] <- NA
+  return(pearson_matrix)
 }
 
 calc_cramer_corr <- function(data, target_var) {
@@ -35,10 +37,7 @@ calc_cramer_corr <- function(data, target_var) {
 
   for (i in seq_len(n_vars)) {
     for (j in seq_len(n_vars)) {
-      if (i == j) {
-        
-        cramer_res[i, j] <- 1
-      } else if (i < j) {
+       if (i < j) {
         if (nlevels(factor_vars[[i]]) > 1 && nlevels(factor_vars[[j]]) > 1) {
           tryCatch({cramer_res[i, j] <- cramerV(factor_vars[[i]], factor_vars[[j]])}, error = function(e){cramer_res[i, j] <- NA})
           
@@ -46,7 +45,6 @@ calc_cramer_corr <- function(data, target_var) {
           cramer_res[i, j] <- NA
         }
 
-        cramer_res[j, i] <- cramer_res[i, j]
       }
     }
   }
@@ -191,3 +189,18 @@ filtrar_variaveis_numericas <- function(df) {
   
   return(df_filtrado)
 }
+
+avaliar_modelo <- function(modelo, dados, tipo, response) {
+  X_val <- as.matrix(dados[, predictors])
+  y_val <- dados[[response]]
+  
+  preds <- switch(tipo,
+                  "GLM" = predict(modelo, dados, type = "response"),
+                  "XGB" = predict(modelo, X_val))
+  
+  rmse_value <- rmse(y_val, preds)
+  #r2_value <- cor(y_val, preds)^2
+  
+  return(RMSE = rmse_value)
+}
+
