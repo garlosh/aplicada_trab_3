@@ -204,3 +204,14 @@ avaliar_modelo <- function(modelo, dados, tipo, response) {
   return(RMSE = rmse_value)
 }
 
+agrupa_categorias <- function(df, r) {
+  for (col in names(df)) {
+    if (is.character(df[[col]]) || is.factor(df[[col]])) {
+      freq <- table(df[[col]]) / nrow(df)
+      categorias_a_agrupar <- names(freq[freq < r])
+      df[[col]] <- ifelse(df[[col]] %in% categorias_a_agrupar, "Outros", df[[col]])
+    }
+  }
+  return(df)
+}
+
