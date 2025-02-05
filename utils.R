@@ -209,9 +209,25 @@ agrupa_categorias <- function(df, r) {
     if (is.character(df[[col]]) || is.factor(df[[col]])) {
       freq <- table(df[[col]]) / nrow(df)
       categorias_a_agrupar <- names(freq[freq < r])
-      df[[col]] <- ifelse(df[[col]] %in% categorias_a_agrupar, "Outros", df[[col]])
+      if(length(categorias_a_agrupar) > 1){
+        df[[col]] <- ifelse(df[[col]] %in% categorias_a_agrupar, "Outros", df[[col]])
+      }
+      
     }
   }
+  return(df)
+}
+
+substituir_na_por_ausentes <- function(df) {
+  
+  colunas_categoricas <- sapply(df, function(col) is.factor(col) || is.character(col))
+  
+
+  df[colunas_categoricas] <- lapply(df[colunas_categoricas], function(col) {
+    col[is.na(col)] <- "Ausentes"
+    return(col)
+  })
+  
   return(df)
 }
 
