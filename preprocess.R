@@ -14,6 +14,7 @@ nome_colunas <- list(
   "variabilidade" = c(),
   "correlacao" = c()
 )
+dados[, c("porao_num_banheiros_lavabos", "acima_solo_num_cozinhas")] <- sapply(dados[, c("porao_num_banheiros_lavabos", "acima_solo_num_cozinhas")], as.factor)
 nome_colunas$base = colnames(dados)
 dados <- dados[, -c(1, 2)]
 target_variable <- "venda_valor"
@@ -65,5 +66,5 @@ for (i in 2:length(nome_colunas)) {
 }
 names(colunas_removidas_etapas) <- names(nome_colunas)[-1]
 
-write.table(dados, "base_processada.csv", sep = ";", quote = FALSE, row.names = FALSE)
+write.table(dados, "./dados/base_processada.csv", sep = ";", quote = FALSE, row.names = FALSE)
 
